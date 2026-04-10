@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>James Caswell — AI Outreach System | Built for Wander</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       RESET & BASE
+    ============================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary:   #0F172A;
+      --bg-secondary: #1E293B;
+      --bg-card:      #162032;
+      --bg-card-alt:  #1A2844;
+      --border:       rgba(99,120,160,0.18);
+      --border-glow:  rgba(59,130,246,0.35);
+      --blue:         #3B82F6;
+      --blue-light:   #60A5FA;
+      --blue-dim:     rgba(59,130,246,0.12);
+      --amber:        #F59E0B;
+      --amber-light:  #FCD34D;
+      --amber-dim:    rgba(245,158,11,0.12);
+      --green:        #10B981;
+      --green-dim:    rgba(16,185,129,0.12);
+      --red-dim:      rgba(239,68,68,0.12);
+      --red:          #EF4444;
+      --text-primary: #F1F5F9;
+      --text-secondary:#94A3B8;
+      --text-muted:   #64748B;
+      --radius-sm:    6px;
+      --radius-md:    12px;
+      --radius-lg:    18px;
+      --shadow-card:  0 4px 32px rgba(0,0,0,0.45);
+      --shadow-glow:  0 0 40px rgba(59,130,246,0.12);
+      --font:         'Inter', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* =============================================
+       NOISE TEXTURE OVERLAY
+    ============================================= */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* =============================================
+       NAV
+    ============================================= */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.01em;
+    }
+
+    .nav-brand span {
+      color: var(--blue-light);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+
+    .nav-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--amber);
+      background: var(--amber-dim);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 4px;
+      padding: 3px 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* =============================================
+       LAYOUT HELPERS
+    ============================================= */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    section { padding: 100px 0; }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+      margin-bottom: 16px;
+    }
+
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 20px; height: 2px;
+      background: var(--blue);
+      border-radius: 1px;
+    }
+
+    .section-title {
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    /* =============================================
+       HERO
+    ============================================= */
+    #hero {
+      padding-top: 160px;
+      padding-bottom: 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-glow {
+      position: absolute;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(ellipse at center, rgba(59,130,246,0.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(99,120,160,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,120,160,0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 100%);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--amber);
+      background: var(--amber-dim);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 100px;
+      padding: 5px 14px;
+      margin-bottom: 28px;
+    }
+
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px;
+      background: var(--amber);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+      max-width: 820px;
+    }
+
+    .hero-title .accent-blue { color: var(--blue-light); }
+    .hero-title .accent-amber { color: var(--amber-light); }
+
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      line-height: 1.75;
+      margin-bottom: 56px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      max-width: 860px;
+    }
+
+    .hero-stat {
+      background: var(--bg-secondary);
+      padding: 28px 24px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+
+    .hero-stat:hover { background: var(--bg-card-alt); }
+
+    .stat-number {
+      font-size: 2.25rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-number.blue { color: var(--blue-light); }
+    .stat-number.amber { color: var(--amber-light); }
+    .stat-number.green { color: #34D399; }
+    .stat-number.white { color: var(--text-primary); }
+
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* =============================================
+       SECTION 1 — PIPELINE
+    ============================================= */
+    #pipeline { background: transparent; }
+
+    .pipeline-header { margin-bottom: 64px; }
+
+    /* Horizontal scrollable pipeline */
+    .pipeline-scroll-wrapper {
+      overflow-x: auto;
+      padding-bottom: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .pipeline-scroll-wrapper::-webkit-scrollbar { height: 4px; }
+    .pipeline-scroll-wrapper::-webkit-scrollbar-track { background: transparent; }
+    .pipeline-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .pipeline-track {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      min-width: max-content;
+      padding: 16px 0 8px;
+    }
+
+    .agent-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .agent-connector {
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      margin-top: 44px;
+    }
+
+    .connector-line {
+      width: 28px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue-dim), var(--blue));
+      position: relative;
+    }
+
+    .connector-arrow {
+      width: 0; height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 7px solid var(--blue);
+    }
+
+    .agent-card {
+      width: 168px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 16px;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .agent-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--blue-light));
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .agent-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 0 24px rgba(59,130,246,0.15), var(--shadow-card);
+      transform: translateY(-3px);
+    }
+
+    .agent-card:hover::before { opacity: 1; }
+
+    .agent-num {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--blue);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .agent-icon {
+      font-size: 1.3rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .agent-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .agent-desc {
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .agent-io {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .io-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.6rem;
+      color: var(--text-muted);
+    }
+
+    .io-label {
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      min-width: 18px;
+    }
+
+    .io-value {
+      color: var(--text-secondary);
+      font-size: 0.62rem;
+    }
+
+    /* Phase labels */
+    .phase-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .phase-label-row {
+      display: flex;
+      gap: 0;
+      min-width: max-content;
+      margin-bottom: 12px;
+    }
+
+    .phase-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .phase-ingestion { color: #818CF8; background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.2); }
+    .phase-context   { color: #34D399; background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2); }
+    .phase-enrich    { color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.25); }
+    .phase-draft     { color: var(--blue-light); background: var(--blue-dim); border: 1px solid rgba(59,130,246,0.25); }
+    .phase-sequence  { color: #F472B6; background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.2); }
+
+    /* Pipeline legend */
+    .pipeline-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 32px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    /* =============================================
+       SECTION 2 — ENRICHED ACCOUNTS
+    ============================================= */
+    #enrichment { background: var(--bg-secondary); }
+
+    .accounts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .account-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .account-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-glow), var(--shadow-card);
+    }
+
+    .account-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(59,130,246,0.04), transparent);
+    }
+
+    .account-company {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .account-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .account-meta .sep { color: var(--border); }
+
+    .account-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+
+    .status-hot { color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.25); }
+    .status-warm { color: #34D399; background: var(--green-dim); border: 1px solid rgba(16,185,129,0.25); }
+
+    .status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+
+    .account-body { padding: 20px 24px; }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(99,120,160,0.08);
+      gap: 16px;
+    }
+
+    .data-row:last-child { border-bottom: none; }
+
+    .data-key {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+      min-width: 90px;
+    }
+
+    .data-val {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      text-align: right;
+      line-height: 1.4;
+    }
+
+    .data-val.highlight { color: var(--text-primary); font-weight: 500; }
+    .data-val.red { color: #FCA5A5; }
+    .data-val.amber { color: var(--amber-light); }
+    .data-val.green { color: #6EE7B7; }
+
+    .account-pain {
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: rgba(239,68,68,0.06);
+      border: 1px solid rgba(239,68,68,0.15);
+      border-radius: var(--radius-sm);
+    }
+
+    .pain-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #FCA5A5;
+      margin-bottom: 6px;
+    }
+
+    .pain-text {
+      font-size: 0.75rem;
+      color: #FCA5A5;
+      line-height: 1.5;
+    }
+
+    .account-signal {
+      margin-top: 10px;
+      padding: 14px 16px;
+      background: rgba(245,158,11,0.06);
+      border: 1px solid rgba(245,158,11,0.15);
+      border-radius: var(--radius-sm);
+    }
+
+    .signal-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber-light);
+      margin-bottom: 6px;
+    }
+
+    .signal-text {
+      font-size: 0.75rem;
+      color: var(--amber-light);
+      line-height: 1.5;
+    }
+
+    .account-firstline {
+      margin-top: 10px;
+      padding: 14px 16px;
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: var(--radius-sm);
+    }
+
+    .firstline-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+      margin-bottom: 6px;
+    }
+
+    .firstline-text {
+      font-size: 0.78rem;
+      color: var(--blue-light);
+      line-height: 1.55;
+      font-style: italic;
+    }
+
+    /* =============================================
+       SECTION 3 — SAMPLE EMAIL
+    ============================================= */
+    #email { background: transparent; }
+
+    .email-wrapper {
+      max-width: 740px;
+      margin: 48px auto 0;
+    }
+
+    .email-client-chrome {
+      background: #1E293B;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card), 0 0 60px rgba(0,0,0,0.4);
+    }
+
+    .email-titlebar {
+      background: #0F172A;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .titlebar-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #FF5F57; }
+    .dot-yellow { background: #FEBC2E; }
+    .dot-green { background: #28C840; }
+
+    .titlebar-title {
+      flex: 1;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .email-header-fields {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .email-field {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .field-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      min-width: 64px;
+    }
+
+    .field-value {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .field-value.subject {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .email-meta-bar {
+      padding: 10px 28px;
+      background: rgba(59,130,246,0.04);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .email-tag {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .tag-blue { color: var(--blue-light); background: var(--blue-dim); border: 1px solid rgba(59,130,246,0.2); }
+    .tag-amber { color: var(--amber-light); background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2); }
+    .tag-green { color: #6EE7B7; background: var(--green-dim); border: 1px solid rgba(16,185,129,0.2); }
+
+    .email-body {
+      padding: 32px 28px;
+    }
+
+    .email-text {
+      font-size: 0.9rem;
+      color: #CBD5E1;
+      line-height: 1.85;
+    }
+
+    .email-text p { margin-bottom: 16px; }
+    .email-text p:last-child { margin-bottom: 0; }
+
+    .email-text .highlight-amber { color: var(--amber-light); font-weight: 600; }
+    .email-text .highlight-blue { color: var(--blue-light); font-weight: 600; }
+
+    .email-sig {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .email-ai-callout {
+      margin-top: 28px;
+      padding: 16px 20px;
+      background: rgba(59,130,246,0.05);
+      border: 1px solid rgba(59,130,246,0.12);
+      border-radius: var(--radius-sm);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .ai-callout-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .ai-callout-text {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .ai-callout-text strong {
+      color: var(--blue-light);
+      font-weight: 600;
+    }
+
+    /* =============================================
+       SECTION 4 — NUMBERS
+    ============================================= */
+    #numbers { background: var(--bg-secondary); }
+
+    .numbers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 48px;
+    }
+
+    .number-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .number-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .number-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue), transparent);
+      opacity: 0.5;
+    }
+
+    .number-card.amber-accent::after {
+      background: linear-gradient(90deg, var(--amber), transparent);
+    }
+
+    .number-card.green-accent::after {
+      background: linear-gradient(90deg, var(--green), transparent);
+    }
+
+    .number-big {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .number-big.blue { color: var(--blue-light); }
+    .number-big.amber { color: var(--amber-light); }
+    .number-big.green { color: #6EE7B7; }
+
+    .number-unit {
+      font-size: 1rem;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    .number-label {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .number-context {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* =============================================
+       SECTION 5 — WHY WANDER
+    ============================================= */
+    #why-wander { background: transparent; }
+
+    .wander-bullets {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 48px;
+      max-width: 820px;
+    }
+
+    .wander-bullet {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 24px 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .wander-bullet:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .bullet-num {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--blue);
+      background: var(--blue-dim);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 6px;
+      padding: 6px 10px;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bullet-content {}
+
+    .bullet-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      line-height: 1.35;
+    }
+
+    .bullet-sub {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* =============================================
+       FOOTER
+    ============================================= */
+    footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      padding: 40px 32px;
+      text-align: center;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-name {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.01em;
+    }
+
+    .footer-detail {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .footer-dot { color: var(--border); margin: 0 6px; }
+
+    /* =============================================
+       DIVIDER
+    ============================================= */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 32px;
+    }
+
+    /* =============================================
+       ANIMATIONS
+    ============================================= */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.7s ease both;
+    }
+
+    .fade-in-1 { animation-delay: 0.05s; }
+    .fade-in-2 { animation-delay: 0.15s; }
+    .fade-in-3 { animation-delay: 0.25s; }
+    .fade-in-4 { animation-delay: 0.35s; }
+
+    /* Agent card stagger */
+    .agent-node:nth-child(1)  .agent-card { animation: fadeInUp 0.5s 0.05s ease both; }
+    .agent-node:nth-child(3)  .agent-card { animation: fadeInUp 0.5s 0.12s ease both; }
+    .agent-node:nth-child(5)  .agent-card { animation: fadeInUp 0.5s 0.19s ease both; }
+    .agent-node:nth-child(7)  .agent-card { animation: fadeInUp 0.5s 0.26s ease both; }
+    .agent-node:nth-child(9)  .agent-card { animation: fadeInUp 0.5s 0.33s ease both; }
+    .agent-node:nth-child(11) .agent-card { animation: fadeInUp 0.5s 0.40s ease both; }
+    .agent-node:nth-child(13) .agent-card { animation: fadeInUp 0.5s 0.47s ease both; }
+    .agent-node:nth-child(15) .agent-card { animation: fadeInUp 0.5s 0.54s ease both; }
+    .agent-node:nth-child(17) .agent-card { animation: fadeInUp 0.5s 0.61s ease both; }
+    .agent-node:nth-child(19) .agent-card { animation: fadeInUp 0.5s 0.68s ease both; }
+    .agent-node:nth-child(21) .agent-card { animation: fadeInUp 0.5s 0.75s ease both; }
+
+    /* Connector flow animation */
+    @keyframes flowRight {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 100% 0%; }
+    }
+
+    .connector-line {
+      background: linear-gradient(90deg, rgba(59,130,246,0.15) 0%, var(--blue) 50%, rgba(59,130,246,0.15) 100%);
+      background-size: 200% 100%;
+      animation: flowRight 1.8s linear infinite;
+    }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .container { padding: 0 20px; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .accounts-grid { grid-template-columns: 1fr; }
+      .numbers-grid { grid-template-columns: repeat(2, 1fr); }
+      section { padding: 72px 0; }
+    }
+
+    @media (max-width: 600px) {
+      .hero-stats { grid-template-columns: 1fr 1fr; }
+      .numbers-grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 2rem; }
+    }
+
+    /* =============================================
+       SCROLL INDICATOR
+    ============================================= */
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 48px;
+      opacity: 0.4;
+    }
+
+    .scroll-indicator span {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 32px;
+      background: linear-gradient(to bottom, var(--text-muted), transparent);
+      animation: scrollDown 1.5s ease-in-out infinite;
+    }
+
+    @keyframes scrollDown {
+      0%, 100% { transform: scaleY(1); opacity: 0.5; }
+      50% { transform: scaleY(1.3); opacity: 1; }
+    }
+
+    /* =============================================
+       PHASE ROW ABOVE PIPELINE
+    ============================================= */
+    .pipeline-phase-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      min-width: max-content;
+      margin-bottom: 16px;
+      padding: 0;
+    }
+
+    .phase-span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .phase-badge {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .phase-spacer {
+      width: 36px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-brand">James Caswell <span>/ AI Outreach System</span></div>
+    <ul class="nav-links">
+      <li><a href="#pipeline">Pipeline</a></li>
+      <li><a href="#enrichment">Enrichment</a></li>
+      <li><a href="#email">Sample Email</a></li>
+      <li><a href="#numbers">Results</a></li>
+      <li><a href="#why-wander">Why Wander</a></li>
+    </ul>
+    <div class="nav-badge">Built for Wander &middot; April 2026</div>
+  </nav>
+
+  <!-- ==========================================
+       HERO
+  =========================================== -->
+  <section id="hero">
+    <div class="hero-bg-glow"></div>
+    <div class="hero-bg-grid"></div>
+    <div class="container">
+      <div class="hero-eyebrow fade-in fade-in-1">
+        <span class="dot"></span>
+        Live Demo &mdash; Wander AE Interview
+      </div>
+      <h1 class="hero-title fade-in fade-in-2">
+        The System That Books<br />
+        <span class="accent-blue">12 Meetings in 2 Weeks</span><br />
+        at <span class="accent-amber">$200 in Infrastructure</span>
+      </h1>
+      <p class="hero-subtitle fade-in fade-in-3">
+        An 11-agent AI pipeline built specifically for vacation rental property managers.
+        Now pointed at Wander's ICP. 1,000+ accounts enriched and ready to activate.
+      </p>
+      <div class="hero-stats fade-in fade-in-4">
+        <div class="hero-stat">
+          <div class="stat-number blue">12</div>
+          <div class="stat-label">Qualified Meetings</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-number amber">2 wks</div>
+          <div class="stat-label">Time to Results</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-number green">$200</div>
+          <div class="stat-label">Total Infra Cost</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-number white">1,000+</div>
+          <div class="stat-label">Enriched Accounts</div>
+        </div>
+      </div>
+      <div class="scroll-indicator">
+        <span>Scroll to explore</span>
+        <div class="scroll-line"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==========================================
+       SECTION 1: PIPELINE
+  =========================================== -->
+  <section id="pipeline">
+    <div class="container">
+      <div class="pipeline-header">
+        <div class="section-label">Section 01</div>
+        <h2 class="section-title">How It Works — The 11-Agent Pipeline</h2>
+        <p class="section-sub">
+          Each agent runs a discrete enrichment task. Outputs chain into the next agent's input.
+          The bottleneck is human judgment at the end — not the system.
+        </p>
+      </div>
+
+      <!-- Phase labels row -->
+      <div class="pipeline-scroll-wrapper">
+
+        <!-- Phase label strip -->
+        <div class="pipeline-phase-row">
+          <!-- Phase: Ingestion (agent 1) — 168px card + 36px connector -->
+          <div class="phase-span" style="width:168px; justify-content:center;">
+            <span class="phase-badge phase-ingestion">Ingestion</span>
+          </div>
+          <div class="phase-spacer"></div>
+          <!-- Phase: Context (agents 2,3,4) -->
+          <div class="phase-span" style="width:calc(168px * 3 + 36px * 2); justify-content:center;">
+            <span class="phase-badge phase-context">Context Layering</span>
+          </div>
+          <div class="phase-spacer"></div>
+          <!-- Phase: Enrichment (agents 5,6,7,8) -->
+          <div class="phase-span" style="width:calc(168px * 4 + 36px * 3); justify-content:center;">
+            <span class="phase-badge phase-enrich">Market Enrichment</span>
+          </div>
+          <div class="phase-spacer"></div>
+          <!-- Phase: Draft (agents 9,10) -->
+          <div class="phase-span" style="width:calc(168px * 2 + 36px * 1); justify-content:center;">
+            <span class="phase-badge phase-draft">Drafting</span>
+          </div>
+          <div class="phase-spacer"></div>
+          <!-- Phase: Sequence (agent 11) -->
+          <div class="phase-span" style="width:168px; justify-content:center;">
+            <span class="phase-badge phase-sequence">Sequencing</span>
+          </div>
+        </div>
+
+        <!-- Agent pipeline track -->
+        <div class="pipeline-track">
+
+          <!-- Agent 1 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 01</div>
+              <span class="agent-icon">&#128269;</span>
+              <div class="agent-name">Profile Ingestion</div>
+              <div class="agent-desc">Scrapes public PM profiles, PMS vendor pages, Google Business listings, and listing counts.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Domain / LinkedIn URL</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Structured PM profile</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 2 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 02</div>
+              <span class="agent-icon">&#128148;</span>
+              <div class="agent-name">Pain Point Mapper</div>
+              <div class="agent-desc">Identifies OTA dependency, direct booking gaps, and operational friction from reviews and listings.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">PM profile + reviews</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Ranked pain list</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 3 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 03</div>
+              <span class="agent-icon">&#127919;</span>
+              <div class="agent-name">Objection Modeler</div>
+              <div class="agent-desc">Pre-builds the top 3 objections this operator will raise and maps responses to their context.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Pain list + PMS stack</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Objection map</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 4 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 04</div>
+              <span class="agent-icon">&#129504;</span>
+              <div class="agent-name">Motivator Profiler</div>
+              <div class="agent-desc">Identifies what the operator cares about most — growth, margin, brand, autonomy, or exit path.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Reviews + social signals</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Motivation score map</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 5 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 05</div>
+              <span class="agent-icon">&#127758;</span>
+              <div class="agent-name">Market Data Enricher</div>
+              <div class="agent-desc">Pulls AirDNA and Mashvisor occupancy trends, ADR benchmarks, and competitor density for their markets.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Market + geo tags</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Market snapshot</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 6 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 06</div>
+              <span class="agent-icon">&#9889;</span>
+              <div class="agent-name">Competitive Signal Detector</div>
+              <div class="agent-desc">Detects if they've recently lost listings to competitors, changed PMS, or had public guest incidents.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Listings + press + reviews</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Churn / switch signals</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 7 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 07</div>
+              <span class="agent-icon">&#128337;</span>
+              <div class="agent-name">Timing Signal Ranker</div>
+              <div class="agent-desc">Scores recency of signals — new hire, review spike, listing drop, conference mention — to prioritize outreach timing.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">All enrichment signals</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Urgency score 1&ndash;10</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 8 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 08</div>
+              <span class="agent-icon">&#128200;</span>
+              <div class="agent-name">Revenue Calculator</div>
+              <div class="agent-desc">Estimates GMV from listing count and ADR, then quantifies the dollar value of their top pain point.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Portfolio + market ADR</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">$ pain quantification</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 9 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 09</div>
+              <span class="agent-icon">&#9998;</span>
+              <div class="agent-name">Message Drafter</div>
+              <div class="agent-desc">Writes 3 email variants using all enrichment context. Each variant tests a different angle: pain, curiosity, or social proof.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Full enrichment package</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">3 email drafts</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 10 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 10</div>
+              <span class="agent-icon">&#128073;</span>
+              <div class="agent-name">Subject Line Optimizer</div>
+              <div class="agent-desc">Generates 5 subject lines per draft, scores against open-rate patterns for cold VR operator outreach.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Draft + PM context</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Ranked subject lines</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="agent-connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
+          <!-- Agent 11 -->
+          <div class="agent-node">
+            <div class="agent-card">
+              <div class="agent-num">Agent 11</div>
+              <span class="agent-icon">&#128197;</span>
+              <div class="agent-name">Sequence Logic</div>
+              <div class="agent-desc">Determines send time, follow-up cadence (day 3, 7, 14), and channel mix (email + LinkedIn) based on urgency score.</div>
+              <div class="agent-io">
+                <div class="io-row"><span class="io-label">IN</span><span class="io-value">Final draft + urgency</span></div>
+                <div class="io-row"><span class="io-label">OUT</span><span class="io-value">Queued sequence</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end pipeline-track -->
+
+        <!-- Human in the loop callout -->
+        <div style="display:flex; align-items:center; gap:16px; margin-top:24px; padding:16px 20px; background:rgba(245,158,11,0.05); border:1px solid rgba(245,158,11,0.15); border-radius:10px; max-width:680px;">
+          <div style="font-size:1.2rem; flex-shrink:0;">&#128104;&#8205;&#128187;</div>
+          <div>
+            <div style="font-size:0.75rem; font-weight:700; color:var(--amber-light); margin-bottom:4px; letter-spacing:0.04em;">James Reviews &amp; Sends</div>
+            <div style="font-size:0.72rem; color:var(--text-secondary); line-height:1.55;">The pipeline queues the outreach. James reads it, adjusts one or two lines, and approves. The bottleneck is his judgment — not the system's throughput. That's intentional.</div>
+          </div>
+        </div>
+
+      </div><!-- end scroll wrapper -->
+
+      <div class="pipeline-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#818CF8;"></div> Ingestion</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#34D399;"></div> Context Layering (Agents 2–4)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber);"></div> Market Enrichment (Agents 5–8)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue-light);"></div> Drafting (Agents 9–10)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F472B6;"></div> Sequencing (Agent 11)</div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==========================================
+       SECTION 2: ENRICHED ACCOUNTS
+  =========================================== -->
+  <section id="enrichment">
+    <div class="container">
+      <div class="section-label">Section 02</div>
+      <h2 class="section-title">Sample Enrichment — Wander ICP</h2>
+      <p class="section-sub">
+        Three accounts the system would surface as high-priority targets for Wander.
+        Each field below is output from the pipeline — not templated, not generic.
+      </p>
+
+      <div class="accounts-grid">
+
+        <!-- Account 1: Blue Ridge Rentals -->
+        <div class="account-card">
+          <div class="account-header">
+            <div class="account-company">Blue Ridge Rentals</div>
+            <div class="account-meta">
+              <span>47 Properties</span>
+              <span class="sep">|</span>
+              <span>Asheville, NC</span>
+            </div>
+            <div class="account-status status-hot">
+              <div class="status-dot"></div>
+              Hot &mdash; Urgency 9/10
+            </div>
+          </div>
+          <div class="account-body">
+            <div class="data-row">
+              <div class="data-key">PMS Stack</div>
+              <div class="data-val highlight">Hostaway</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">OTA Dependency</div>
+              <div class="data-val red">91% Airbnb / VRBO</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Est. Annual GMV</div>
+              <div class="data-val highlight">~$2.1M</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Avg. OTA Fee Rate</div>
+              <div class="data-val red">14.2%</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Direct Booking Site</div>
+              <div class="data-val red">None detected</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Market ADR</div>
+              <div class="data-val highlight">$287 / night</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Occupancy Trend</div>
+              <div class="data-val amber">Down 8% YoY (Asheville)</div>
+            </div>
+
+            <div class="account-pain">
+              <div class="pain-label">&#9888; Pain Point Identified</div>
+              <div class="pain-text">No direct booking channel — leaving an estimated $298K/yr on the table in OTA fees on $2.1M GMV. Every booking through Airbnb is margin they don't see.</div>
+            </div>
+
+            <div class="account-signal">
+              <div class="signal-label">&#9889; Timing Signal</div>
+              <div class="signal-text">3 x 1-star Airbnb reviews in 6 weeks mentioning "booking was confusing" and "couldn't reach the company directly." High urgency — guest friction is public and growing.</div>
+            </div>
+
+            <div class="account-firstline">
+              <div class="firstline-label">&#9998; System-Generated First Line</div>
+              <div class="firstline-text">"Noticed Blue Ridge Rentals is running 47 units through Hostaway but routing almost everything through Airbnb — at 14% fees, that's roughly $298K a year that isn't hitting your P&amp;L. Saw a few recent reviews mention booking friction, which usually means it's fixable."</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account 2: Coastal Stays Group -->
+        <div class="account-card">
+          <div class="account-header">
+            <div class="account-company">Coastal Stays Group</div>
+            <div class="account-meta">
+              <span>83 Properties</span>
+              <span class="sep">|</span>
+              <span>30A, FL (Destin / Seaside)</span>
+            </div>
+            <div class="account-status status-hot">
+              <div class="status-dot"></div>
+              Hot &mdash; Urgency 8/10
+            </div>
+          </div>
+          <div class="account-body">
+            <div class="data-row">
+              <div class="data-key">PMS Stack</div>
+              <div class="data-val highlight">Guesty</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">OTA Dependency</div>
+              <div class="data-val amber">76% Airbnb / VRBO</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Est. Annual GMV</div>
+              <div class="data-val highlight">~$5.4M</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Avg. OTA Fee Rate</div>
+              <div class="data-val amber">13.1%</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Direct Booking Site</div>
+              <div class="data-val amber">Exists — low SEO, no PPC</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Market ADR</div>
+              <div class="data-val highlight">$412 / night</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Listing Change</div>
+              <div class="data-val red">-11 listings Q4 2025</div>
+            </div>
+
+            <div class="account-pain">
+              <div class="pain-label">&#9888; Pain Point Identified</div>
+              <div class="pain-text">Has a direct booking site but it's invisible — under 200 monthly visits estimated. Lost 11 listings in Q4, likely due to owner dissatisfaction with net revenue. Need to show owners better margin story.</div>
+            </div>
+
+            <div class="account-signal">
+              <div class="signal-label">&#9889; Timing Signal</div>
+              <div class="signal-text">Owner of Coastal Stays posted in a 30A Facebook group 3 weeks ago: "Looking at alternatives to VRBO — fees are killing us this season." Post has 47 comments. Active public signal.</div>
+            </div>
+
+            <div class="account-firstline">
+              <div class="firstline-label">&#9998; System-Generated First Line</div>
+              <div class="firstline-text">"Saw your post in the 30A group about VRBO fees — with 83 units running at $412 ADR, you're probably losing $700K+ a year to OTA margins that should be going to you and your homeowners. Your direct site exists, it just isn't finding guests yet."</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account 3: Summit Property Partners -->
+        <div class="account-card">
+          <div class="account-header">
+            <div class="account-company">Summit Property Partners</div>
+            <div class="account-meta">
+              <span>61 Properties</span>
+              <span class="sep">|</span>
+              <span>Park City, UT</span>
+            </div>
+            <div class="account-status status-warm">
+              <div class="status-dot"></div>
+              Warm &mdash; Urgency 7/10
+            </div>
+          </div>
+          <div class="account-body">
+            <div class="data-row">
+              <div class="data-key">PMS Stack</div>
+              <div class="data-val highlight">OwnerRez</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">OTA Dependency</div>
+              <div class="data-val amber">68% Airbnb / VRBO</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Est. Annual GMV</div>
+              <div class="data-val highlight">~$3.8M</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Avg. OTA Fee Rate</div>
+              <div class="data-val amber">13.8%</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Direct Booking Site</div>
+              <div class="data-val green">Active — ~1.2K mo. visits</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Market ADR</div>
+              <div class="data-val highlight">$538 / night</div>
+            </div>
+            <div class="data-row">
+              <div class="data-key">Motivator Profile</div>
+              <div class="data-val highlight">Brand + owner retention</div>
+            </div>
+
+            <div class="account-pain">
+              <div class="pain-label">&#9888; Pain Point Identified</div>
+              <div class="pain-text">Running OwnerRez well and has direct traffic, but no loyalty mechanic or brand differentiation from generic STR platforms. Risk: higher-end homeowners will move to a branded operator at renewal.</div>
+            </div>
+
+            <div class="account-signal">
+              <div class="signal-label">&#9889; Timing Signal</div>
+              <div class="signal-text">Hired a new marketing coordinator in January 2026 (LinkedIn). New hire often means new vendor evaluation cycle. Company is actively building brand — receptive timing window is open now.</div>
+            </div>
+
+            <div class="account-firstline">
+              <div class="firstline-label">&#9998; System-Generated First Line</div>
+              <div class="firstline-text">"Congrats on the new marketing hire — Summit is clearly investing in brand, which puts you in a different tier than most Park City operators still running purely on Airbnb. At 61 units and $538 ADR, the question is whether your homeowners are seeing that differentiation reflected in their net revenue."</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end accounts-grid -->
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==========================================
+       SECTION 3: SAMPLE EMAIL
+  =========================================== -->
+  <section id="email">
+    <div class="container">
+      <div class="section-label">Section 03</div>
+      <h2 class="section-title">Sample Outreach — What Gets Sent</h2>
+      <p class="section-sub">
+        This is the actual email the system drafts for Blue Ridge Rentals. Every line is grounded in enriched data — nothing generic, nothing templated.
+      </p>
+
+      <div class="email-wrapper">
+        <div class="email-client-chrome">
+          <div class="email-titlebar">
+            <div class="titlebar-dot dot-red"></div>
+            <div class="titlebar-dot dot-yellow"></div>
+            <div class="titlebar-dot dot-green"></div>
+            <div class="titlebar-title">Outbox &mdash; Drafted by Agent 09 &bull; Reviewed by James Caswell</div>
+          </div>
+
+          <div class="email-header-fields">
+            <div class="email-field">
+              <div class="field-label">From</div>
+              <div class="field-value">James Caswell &lt;james@jcaswell.co&gt;</div>
+            </div>
+            <div class="email-field">
+              <div class="field-label">To</div>
+              <div class="field-value">Travis M. &lt;travis@blueridgerentals.com&gt; &mdash; Owner, Blue Ridge Rentals</div>
+            </div>
+            <div class="email-field">
+              <div class="field-label">Subject</div>
+              <div class="field-value subject">47 units on Hostaway — one thing that might fix the booking reviews</div>
+            </div>
+            <div class="email-field">
+              <div class="field-label">Date</div>
+              <div class="field-value">Tuesday, April 8, 2026 &mdash; 9:12 AM ET</div>
+            </div>
+          </div>
+
+          <div class="email-meta-bar">
+            <div class="email-tag tag-blue">Agent 09 Draft — Pain Angle</div>
+            <div class="email-tag tag-amber">Urgency Score: 9/10</div>
+            <div class="email-tag tag-green">Subject Line Rank: #1 of 5</div>
+          </div>
+
+          <div class="email-body">
+            <div class="email-text">
+              <p>Travis,</p>
+              <p>
+                Noticed Blue Ridge Rentals is running <span class="highlight-amber">47 properties through Hostaway</span> but routing the majority of bookings through Airbnb and VRBO. At their current fee rates, that's roughly <span class="highlight-amber">$298K/year</span> leaving your P&amp;L — margin that should be staying with you and your homeowners.
+              </p>
+              <p>
+                Three of your recent Airbnb reviews mention guests having trouble reaching you directly or struggling with the booking process. That's usually a symptom of OTA dependency, not a guest service problem — and it's fixable without rebuilding your operations.
+              </p>
+              <p>
+                I work with <span class="highlight-blue">Wander</span>, a premium STR platform that's built specifically to give operators like you a direct-booking infrastructure that converts — without the OTA tax. We've worked with Hostaway-native operators before and the integration lift is minimal.
+              </p>
+              <p>
+                Worth a 20-minute call to see if the math works for your portfolio?
+              </p>
+            </div>
+
+            <div class="email-sig">
+              James Caswell<br />
+              Senior Account Executive<br />
+              <span style="color:var(--blue-light);">Wander</span> &mdash; Premium Vacation Rentals<br />
+              james@jcaswell.co
+            </div>
+
+            <div class="email-ai-callout">
+              <div class="ai-callout-icon">&#128064;</div>
+              <div class="ai-callout-text">
+                <strong>Pipeline note:</strong> This draft was generated by Agent 09 using pain-angle framing, enriched by Agents 01&ndash;08. The $298K figure is Agent 08's revenue calculation (47 units &times; $287 ADR &times; 68% occupancy &times; 91% OTA mix &times; 14.2% fee). Subject line selected by Agent 10 from a set of 5. James reviewed and sent unchanged.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==========================================
+       SECTION 4: NUMBERS
+  =========================================== -->
+  <section id="numbers">
+    <div class="container">
+      <div class="section-label">Section 04</div>
+      <h2 class="section-title">The Numbers</h2>
+      <p class="section-sub">
+        Real results from the first deployment of this system while at Savvy. These are not projections.
+      </p>
+
+      <div class="numbers-grid">
+
+        <div class="number-card">
+          <div class="number-big blue">12</div>
+          <div class="number-label">Qualified Meetings Booked</div>
+          <div class="number-context">In a 2-week window, from cold to confirmed calendar</div>
+        </div>
+
+        <div class="number-card amber-accent">
+          <div class="number-big amber">2 <span class="number-unit">wks</span></div>
+          <div class="number-label">Time to First Results</div>
+          <div class="number-context">From first pipeline run to first meeting on the calendar</div>
+        </div>
+
+        <div class="number-card green-accent">
+          <div class="number-big green">$200</div>
+          <div class="number-label">Total Infrastructure Cost</div>
+          <div class="number-context">API costs, compute, enrichment tools — full run</div>
+        </div>
+
+        <div class="number-card amber-accent">
+          <div class="number-big amber">$16.67</div>
+          <div class="number-label">Cost Per Qualified Meeting</div>
+          <div class="number-context">$200 / 12 meetings — not per lead, per qualified meeting</div>
+        </div>
+
+        <div class="number-card">
+          <div class="number-big blue">1,000<span class="number-unit">+</span></div>
+          <div class="number-label">PM Accounts Enriched</div>
+          <div class="number-context">Vacation rental operators profiled and queued — ready to activate against Wander's target profile</div>
+        </div>
+
+        <div class="number-card">
+          <div class="number-big blue">11</div>
+          <div class="number-label">Agents Running in Parallel</div>
+          <div class="number-context">Discrete enrichment tasks chained across the pipeline per account</div>
+        </div>
+
+        <div class="number-card green-accent" style="grid-column: span 3;">
+          <div style="display:flex; align-items:center; gap:48px; flex-wrap:wrap;">
+            <div>
+              <div class="number-big green">3 <span class="number-unit">yrs</span></div>
+              <div class="number-label">Closing VR Operators at Savvy</div>
+              <div class="number-context">30-unit boutique operators to 2,500-unit enterprise management companies — full ICP coverage</div>
+            </div>
+            <div style="flex:1; min-width:240px; padding-left:32px; border-left:1px solid var(--border);">
+              <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.7;">
+                Three years of closing vacation rental operators across every segment means the enrichment logic in this system isn't generic. It's been tuned against the actual objections, buying cycles, and pain points that VR operators have — not inferred from a playbook.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==========================================
+       SECTION 5: WHY WANDER
+  =========================================== -->
+  <section id="why-wander">
+    <div class="container">
+      <div class="section-label">Section 05</div>
+      <h2 class="section-title">Why This Matters for Wander</h2>
+      <p class="section-sub">
+        This isn't a proof of concept built for the interview. It's a running system — now pointed at Wander's exact ICP.
+      </p>
+
+      <div class="wander-bullets">
+
+        <div class="wander-bullet">
+          <div class="bullet-num">01</div>
+          <div class="bullet-content">
+            <div class="bullet-title">This system already knows your ICP — it's been trained on VR operator data for 3 years</div>
+            <div class="bullet-sub">
+              The enrichment logic, pain point taxonomy, and objection maps weren't built in a weekend. They were refined across three years of closing vacation rental operators at Savvy — from boutique 30-unit portfolios to 2,500-unit enterprise management companies. When the pipeline profiles a property manager, it's pulling from a framework built on hundreds of real sales cycles in this exact vertical. Wander doesn't get a generic outreach system — it gets one pre-loaded with institutional knowledge of your buyer.
+            </div>
+          </div>
+        </div>
+
+        <div class="wander-bullet">
+          <div class="bullet-num">02</div>
+          <div class="bullet-content">
+            <div class="bullet-title">1,000+ enriched PM accounts ready to activate against Wander's target profile immediately</div>
+            <div class="bullet-sub">
+              The pipeline has already run on over a thousand property manager accounts. They're profiled, scored, and ranked. On day one, Wander gets a prioritized outreach queue — not a list of names, but a CRM of enriched accounts with pain points, timing signals, revenue calculations, and drafted first messages. The work of the first six months of pipeline-building is already done.
+            </div>
+          </div>
+        </div>
+
+        <div class="wander-bullet">
+          <div class="bullet-num">03</div>
+          <div class="bullet-content">
+            <div class="bullet-title">Not a proof of concept. A running system. Day 1 non-linear output.</div>
+            <div class="bullet-sub">
+              Most AE hires ramp for 90 days before their first meeting. This system means Wander gets outreach volume from week one — while James is still in onboarding. At $16.67 per qualified meeting and 12 meetings in the first two weeks of the last deployment, the question isn't whether it works. It's how fast Wander wants to turn the dial.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==========================================
+       FOOTER
+  =========================================== -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-name">James Caswell</div>
+      <div class="footer-detail">
+        Senior AE
+        <span class="footer-dot">&middot;</span>
+        Built for Wander's go-to-market
+        <span class="footer-dot">&middot;</span>
+        April 2026
+      </div>
+      <div style="margin-top:8px; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.06em; text-transform:uppercase;">
+        11-agent pipeline &bull; $200 infrastructure &bull; 12 qualified meetings / 2 weeks
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
